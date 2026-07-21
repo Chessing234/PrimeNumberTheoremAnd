@@ -296,6 +296,20 @@ theorem d_isMultiplicative (k : ℕ) : (d k).IsMultiplicative := by
 
 /-- The antidiagonal of divisors of a prime power `p^k` is exactly
 `{(p^n, p^(k-n)) | n ≤ k}`. -/
+@[blueprint
+  "sum_divisorsAntidiagonal_prime_pow"
+  (title := "sum divisorsAntidiagonal prime pow")
+  (statement := /--
+    For a prime $p$ and $k \in \mathbb{N}$,
+    $$
+    \sum_{xy = p^k} f(x,y)
+    = \sum_{n=0}^{k} f(p^n, p^{k-n}).
+    $$
+  -/)
+  (proof := /--
+    The map $n \mapsto (p^n, p^{k-n})$ is a bijection between $\{0,\ldots,k\}$ and the
+    divisor antidiagonal of $p^k$, by the classification of divisors of a prime power.
+  -/)]
 theorem Nat.sum_divisorsAntidiagonal_prime_pow {α : Type*} [AddCommMonoid α]
     {k p : ℕ} {f : ℕ × ℕ → α} (hp : Nat.Prime p) :
     ∑ x ∈ (p ^ k).divisorsAntidiagonal, f x =
