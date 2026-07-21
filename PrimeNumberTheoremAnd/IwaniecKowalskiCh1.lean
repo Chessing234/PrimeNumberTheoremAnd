@@ -294,10 +294,31 @@ theorem d_isMultiplicative (k : ℕ) : (d k).IsMultiplicative := by
       rw [d_succ]
       exact ih.mul isMultiplicative_zeta
 
-/- MOVE HELPER LEMMA ESLEWHERE?? Not used in this file, but seems potentially useful? -/
-theorem Nat.sum_divisorsAntidiagonal_prime_pow {α : Type u_1} [AddCommMonoid α] [HMul α α α] {k p : ℕ} {f : ℕ × ℕ → α} (h : Nat.Prime p) :
-∑ x ∈ (p ^ k).divisorsAntidiagonal, f x = ∑ n ∈ Finset.range (k + 1), f (p ^ n, p ^ (k - n)) := by
-  sorry
+/-- The antidiagonal of divisors of a prime power `p^k` is exactly
+`{(p^n, p^(k-n)) | n ≤ k}`. -/
+theorem Nat.sum_divisorsAntidiagonal_prime_pow {α : Type*} [AddCommMonoid α]
+    {k p : ℕ} {f : ℕ × ℕ → α} (hp : Nat.Prime p) :
+    ∑ x ∈ (p ^ k).divisorsAntidiagonal, f x =
+      ∑ n ∈ Finset.range (k + 1), f (p ^ n, p ^ (k - n)) := by
+  refine Eq.symm <| Finset.sum_bij (fun n _ => (p ^ n, p ^ (k - n))) ?_ ?_ ?_ ?_
+  · intro n hn
+    refine mem_divisorsAntidiagonal.mpr ⟨?_, pow_ne_zero k hp.ne_zero⟩
+    rw [← pow_add, Nat.add_sub_of_le (Nat.lt_succ_iff.mp (Finset.mem_range.mp hn))]
+  · intro a _ha b _hb heq
+    exact (Nat.pow_right_injective hp.two_le).eq_iff.mp (Prod.mk.inj heq).1
+  · intro x hx
+    obtain ⟨hprod, hne⟩ := mem_divisorsAntidiagonal.mp hx
+    have hx1 : x.1 ∈ (p ^ k).divisors :=
+      mem_divisors.mpr ⟨dvd_of_mul_right_eq _ hprod, hne⟩
+    obtain ⟨n, hn, hx1eq⟩ := (mem_divisors_prime_pow hp k).mp hx1
+    have hsnd : p ^ (k - n) = x.2 := by
+      apply mul_left_cancel₀ (pow_ne_zero n hp.ne_zero)
+      calc
+        p ^ n * p ^ (k - n) = p ^ k := by rw [← pow_add, Nat.add_sub_of_le hn]
+        _ = x.1 * x.2 := hprod.symm
+        _ = p ^ n * x.2 := by rw [hx1eq]
+    exact ⟨n, Finset.mem_range.mpr (Nat.lt_succ_of_le hn), Prod.ext hx1eq.symm hsnd⟩
+  · intros; rfl
 
 /-- Explicit formula: `d k (p^a) = (a + k - 1).choose (k - 1) for prime p` for `k ≥ 1`. -/
 @[blueprint
