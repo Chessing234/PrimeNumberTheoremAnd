@@ -96,4 +96,53 @@ lemma geometric_sigma_pmul_sum
         field_simp [hx1, hAx1, hBx1, hABx1, hA, hB]
         ring
 
+/-- ∑ (k+1)² xᵏ = (1+x)/(1-x)³ = (1-x²)/(1-x)⁴ for ‖x‖ < 1. -/
+lemma tsum_succ_sq_mul_geometric {x : ℂ} (hx : ‖x‖ < 1) :
+    ∑' k : ℕ, ((k + 1 : ℂ) ^ 2) * x ^ k = (1 + x) / (1 - x) ^ 3 := by
+  have h2 := tsum_choose_mul_geometric_of_norm_lt_one (k := 2) (𝕜 := ℂ) hx
+  have h1 := tsum_choose_mul_geometric_of_norm_lt_one (k := 1) (𝕜 := ℂ) hx
+  have hsA : Summable fun k : ℕ ↦ (2 : ℂ) * (↑((k + 2).choose 2) * x ^ k) :=
+    (summable_choose_mul_geometric_of_norm_lt_one (R := ℂ) 2 hx).mul_left (2 : ℂ)
+  have hsB : Summable fun k : ℕ ↦ ↑((k + 1).choose 1) * x ^ k :=
+    summable_choose_mul_geometric_of_norm_lt_one (R := ℂ) 1 hx
+  have hid (k : ℕ) :
+      ((k + 1 : ℂ) ^ 2) = 2 * ↑((k + 2).choose 2) - ↑(k + 1) := by
+    have hn : 2 * (k + 2).choose 2 = (k + 2) * (k + 1) := by
+      rw [Nat.choose_two_right]
+      exact Nat.mul_div_cancel' (by
+        simpa [mul_comm, ← even_iff_two_dvd] using Nat.even_mul_succ_self (k + 1))
+    have hC : (2 : ℂ) * ↑((k + 2).choose 2) = (↑k + 2) * (↑k + 1) := by
+      exact_mod_cast hn
+    rw [hC]; push_cast; ring
+  have hcongr (k : ℕ) :
+      ((k + 1 : ℂ) ^ 2) * x ^ k =
+        (2 : ℂ) * (↑((k + 2).choose 2) * x ^ k) - ↑((k + 1).choose 1) * x ^ k := by
+    rw [hid k, Nat.choose_one_right, sub_mul]; ring
+  rw [tsum_congr hcongr, Summable.tsum_sub hsA hsB, tsum_mul_left, h2, h1]
+  have hx1 : x ≠ 1 := ne_one_of_norm_lt_one hx
+  field_simp [hx1]
+  ring
+
+/-- When A = B = 1, the Ramanujan local factor is (1-x²)/(1-x)⁴. -/
+lemma geometric_sigma_pmul_sum_one_one {x : ℂ} (hx : ‖x‖ < 1) :
+    ∑' k : ℕ, ((∑ i ∈ range (k + 1), (1 : ℂ) ^ i) * (∑ j ∈ range (k + 1), (1 : ℂ) ^ j) * x ^ k) =
+      (1 - x ^ 2) / (1 - x) ^ 4 := by
+  have honesum (k : ℕ) : ∑ i ∈ range (k + 1), (1 : ℂ) ^ i = ↑(k + 1) := by
+    simp [sum_const, card_range, nsmul_eq_mul]
+  have hsimp (k : ℕ) :
+      (∑ i ∈ range (k + 1), (1 : ℂ) ^ i) * (∑ j ∈ range (k + 1), (1 : ℂ) ^ j) * x ^ k =
+        ((k + 1 : ℂ) ^ 2) * x ^ k := by
+    have sA := honesum k
+    nth_rw 1 [sA]
+    nth_rw 1 [sA]
+    push_cast
+    ring_nf
+  have hx1 := ne_one_of_norm_lt_one hx
+  calc ∑' k : ℕ, ((∑ i ∈ range (k + 1), (1 : ℂ) ^ i) * (∑ j ∈ range (k + 1), (1 : ℂ) ^ j) * x ^ k)
+      = ∑' k : ℕ, ((k + 1 : ℂ) ^ 2) * x ^ k := tsum_congr hsimp
+    _ = (1 + x) / (1 - x) ^ 3 := tsum_succ_sq_mul_geometric hx
+    _ = (1 - x ^ 2) / (1 - x) ^ 4 := by
+        have : 1 - x ^ 2 = (1 - x) * (1 + x) := by ring
+        rw [this]; field_simp [hx1]
+
 end Scratch
