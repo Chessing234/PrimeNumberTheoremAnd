@@ -316,6 +316,11 @@ theorem pi_inequality (x : ℝ) (hx : x ≥ 5393) :
     have : log y < log x + y / x - 1 := by linarith
     have hmul := mul_lt_mul_of_pos_left this hxpos
     have hrw : x * (log x + y / x - 1) = x * log x + y - x := by field_simp; ring
+    have h1 : x * log y < x * log x + y - x := by linarith
+    have h2 : y * log x - x * log y > (y - x) * (log x - 1) := by nlinarith
+    have h3 : (y - x) * (log x - 1) > y - x := by
+      have : (0 : ℝ) < y - x := sub_pos.mpr hxy
+      nlinarith
     nlinarith
   rw [hpi]
   exact lt_of_lt_of_le hstrict hge
