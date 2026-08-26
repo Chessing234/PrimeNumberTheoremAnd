@@ -272,11 +272,53 @@ Some results from \cite{Dusart1999}-/
   "thm:dusart1999-pi"
   (title := "Dusart 1999, $\\pi$ inequality")
   (statement := /-- For $x \geq 5393$, we have $\pi(x) > \frac{x}{\log x - 1}$. -/)
+  (proof := /-- Non-strict form is \ref{Dusart_cor_5_3_a}. Upgrade to a strict
+    inequality because $\pi$ is constant on each $[n,n+1)$ while
+    $x/(\log x-1)$ is strictly increasing for $x>e^2$. -/)
+  (proofUses := ["Dusart_cor_5_3_a"])
   (latexEnv := "theorem")]
 theorem pi_inequality (x : ℝ) (hx : x ≥ 5393) :
     pi x > x / (log x - 1) := by
-  -- Art01 / Dusart1999 use a strict inequality. Dusart2018 Cor 5.3(a) is non-strict.
-  sorry
+  have hx0 : (0 : ℝ) ≤ x := by linarith
+  have hxpos : (0 : ℝ) < x := by linarith
+  have hx1 : (1 : ℝ) < x := by linarith
+  have hexp2 : exp 2 < x := by
+    have h : exp 2 < 9 := by
+      have : exp 2 = exp 1 * exp 1 := by rw [← exp_add]; norm_num
+      nlinarith [exp_one_lt_d9]
+    linarith
+  have hlogx2 : (2 : ℝ) < log x := by
+    rwa [← log_exp 2, log_lt_log_iff (exp_pos _) hxpos]
+  have hdenx : (0 : ℝ) < log x - 1 := by linarith
+  set y := (x + (⌊x⌋₊ + 1 : ℝ)) / 2
+  have hxy : x < y := by
+    have := Nat.lt_floor_add_one x
+    dsimp [y]; linarith
+  have hyu : y < (⌊x⌋₊ : ℝ) + 1 := by
+    have : (⌊x⌋₊ : ℝ) ≤ x := Nat.floor_le hx0
+    dsimp [y]; linarith
+  have hyl : (⌊x⌋₊ : ℝ) ≤ y := by
+    have : (⌊x⌋₊ : ℝ) ≤ x := Nat.floor_le hx0
+    dsimp [y]; linarith
+  have hfloor : ⌊y⌋₊ = ⌊x⌋₊ := Nat.floor_eq_on_Ico _ _ ⟨hyl, hyu⟩
+  have hpi : pi x = pi y := by simp [pi, hfloor]
+  have hypos : (0 : ℝ) < y := by linarith
+  have hge := Dusart.corollary_5_3_a (by linarith : y ≥ 5393)
+  have hz : (1 : ℝ) < y / x := (one_lt_div hxpos).mpr hxy
+  have hlogz : log (y / x) < y / x - 1 :=
+    log_lt_sub_one_of_pos (div_pos hypos hxpos) (ne_of_gt hz)
+  have hlog_div : log (y / x) = log y - log x := log_div hypos.ne' hxpos.ne'
+  have hdeny : (0 : ℝ) < log y - 1 := by
+    have : (2 : ℝ) < log y := lt_trans hlogx2 (log_lt_log hxpos hxy)
+    linarith
+  have hstrict : x / (log x - 1) < y / (log y - 1) := by
+    rw [div_lt_div_iff₀ hdenx hdeny]
+    have : log y < log x + y / x - 1 := by linarith
+    have hmul := mul_lt_mul_of_pos_left this hxpos
+    have hrw : x * (log x + y / x - 1) = x * log x + y - x := by field_simp; ring
+    nlinarith
+  rw [hpi]
+  exact lt_of_lt_of_le hstrict hge
 
 private lemma log_ge_22 {x : ℝ} (hx : x ≥ exp 22) : log x ≥ 22 := by
   calc (22 : ℝ) = log (exp 22) := (log_exp 22).symm
