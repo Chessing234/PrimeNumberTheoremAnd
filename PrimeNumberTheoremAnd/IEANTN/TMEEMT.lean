@@ -241,9 +241,50 @@ theorem theorem_a (x : ℝ) (hx : x > 0) :
   "thm:rs-1962-b"
   (title := "Rosser-Schoenfeld 1962, part b")
   (statement := /-- For $x \geq 17$, we have $\pi(x) > x / \log x$. -/)
+  (proof := /-- Non-strict form is \ref{Dusart_cor_5_2_a}. Upgrade to a strict
+    inequality because $\pi$ is constant on each $[n,n+1)$ while $x/\log x$ is
+    strictly increasing for $x>e$. -/)
+  (proofUses := ["Dusart_cor_5_2_a"])
   (latexEnv := "theorem")]
 theorem theorem_b (x : ℝ) (hx : x ≥ 17) :
-    pi x > x / log x := by sorry
+    pi x > x / log x := by
+  have hx0 : (0 : ℝ) ≤ x := by linarith
+  have hx1 : (1 : ℝ) < x := by linarith
+  have hxpos : (0 : ℝ) < x := by linarith
+  set y := (x + (⌊x⌋₊ + 1 : ℝ)) / 2
+  have hxy : x < y := by
+    have := Nat.lt_floor_add_one x
+    dsimp [y]; linarith
+  have hyu : y < (⌊x⌋₊ : ℝ) + 1 := by
+    have : (⌊x⌋₊ : ℝ) ≤ x := Nat.floor_le hx0
+    dsimp [y]; linarith
+  have hyl : (⌊x⌋₊ : ℝ) ≤ y := by
+    have : (⌊x⌋₊ : ℝ) ≤ x := Nat.floor_le hx0
+    dsimp [y]; linarith
+  have hfloor : ⌊y⌋₊ = ⌊x⌋₊ := Nat.floor_eq_on_Ico _ _ ⟨hyl, hyu⟩
+  have hpi : pi x = pi y := by simp [pi, hfloor]
+  have hy17 : y ≥ 17 := by linarith
+  have hypos : (0 : ℝ) < y := by linarith
+  have hge := Dusart.corollary_5_2_a hy17
+  have hlogx := log_pos hx1
+  have hlogy := log_pos (show (1 : ℝ) < y by linarith)
+  have hz : (1 : ℝ) < y / x := (one_lt_div hxpos).mpr hxy
+  have hlogz : log (y / x) < y / x - 1 :=
+    log_lt_sub_one_of_pos (div_pos hypos hxpos) (ne_of_gt hz)
+  have hlog_div : log (y / x) = log y - log x := log_div hypos.ne' hxpos.ne'
+  have hstrict : x / log x < y / log y := by
+    rw [div_lt_div_iff₀ hlogx hlogy]
+    have : log y < log x + y / x - 1 := by linarith
+    have hmul := mul_lt_mul_of_pos_left this hxpos
+    have hrw : x * (log x + y / x - 1) = x * log x + y - x := by field_simp; ring
+    have hlogx1 : (1 : ℝ) < log x := by
+      have hexp : exp 1 < x :=
+        lt_of_lt_of_le (lt_trans exp_one_lt_d9 (by norm_num : (2.7182818286 : ℝ) < 3))
+          (by linarith : (3 : ℝ) ≤ x)
+      rwa [← log_exp 1, log_lt_log_iff (exp_pos _) hxpos]
+    nlinarith
+  rw [hpi]
+  exact lt_of_lt_of_le hstrict hge
 
 @[blueprint
   "thm:rs-1962-c"
