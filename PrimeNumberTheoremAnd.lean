@@ -17,6 +17,8 @@ import PrimeNumberTheoremAnd.IEANTN.BKLNW.BKLNW_app
 import PrimeNumberTheoremAnd.IEANTN.BKLNW.BKLNW_app_tables
 import PrimeNumberTheoremAnd.IEANTN.BKLNW.BKLNW_table10_rows
 import PrimeNumberTheoremAnd.IEANTN.BKLNW.BKLNW_table10_dispatch
+import PrimeNumberTheoremAnd.IEANTN.BKLNW.BKLNW_table11_dispatch
+import PrimeNumberTheoremAnd.IEANTN.BKLNW.BKLNW_table11_suffix
 import PrimeNumberTheoremAnd.IEANTN.BKLNW.BKLNW_tables
 import PrimeNumberTheoremAnd.IEANTN.Buthe
 import PrimeNumberTheoremAnd.IEANTN.CH2.CH2
@@ -33,6 +35,9 @@ import PrimeNumberTheoremAnd.IEANTN.Goldbach
 import PrimeNumberTheoremAnd.IEANTN.Kadiri
 import PrimeNumberTheoremAnd.IEANTN.KadiriEq11Reduction
 import PrimeNumberTheoremAnd.IEANTN.KadiriEq14
+import PrimeNumberTheoremAnd.IEANTN.KadiriEq15
+import PrimeNumberTheoremAnd.IEANTN.KadiriEq15GammaFactor
+import PrimeNumberTheoremAnd.IEANTN.KadiriEq15LaplaceStrip
 import PrimeNumberTheoremAnd.IEANTN.KadiriSupport
 import PrimeNumberTheoremAnd.IEANTN.KLN
 import PrimeNumberTheoremAnd.IEANTN.Lcm
