@@ -271,17 +271,23 @@ theorem theorem_b (x : ℝ) (hx : x ≥ 17) :
   have hlogz : log (y / x) < y / x - 1 :=
     log_lt_sub_one_of_pos (div_pos hypos hxpos) (ne_of_gt hz)
   have hlog_div : log (y / x) = log y - log x := log_div hypos.ne' hxpos.ne'
+  have hlogx1 : (1 : ℝ) < log x := by
+    have hexp : exp 1 < x :=
+      lt_of_lt_of_le (lt_trans exp_one_lt_d9 (by norm_num : (2.7182818286 : ℝ) < 3))
+        (by linarith : (3 : ℝ) ≤ x)
+    rwa [← log_exp 1, log_lt_log_iff (exp_pos _) hxpos]
   have hstrict : x / log x < y / log y := by
     rw [div_lt_div_iff₀ hlogx hlogy]
-    have : log y < log x + y / x - 1 := by linarith [hlog_div, hlogz]
-    have hmul := mul_lt_mul_of_pos_left this hxpos
-    have hrw : x * (log x + y / x - 1) = x * log x + y - x := by field_simp; ring
-    have hlogx1 : (1 : ℝ) < log x := by
-      have hexp : exp 1 < x :=
-        lt_of_lt_of_le (lt_trans exp_one_lt_d9 (by norm_num : (2.7182818286 : ℝ) < 3))
-          (by linarith : (3 : ℝ) ≤ x)
-      rwa [← log_exp 1, log_lt_log_iff (exp_pos _) hxpos]
-    nlinarith [hmul, hrw, hlogx1]
+    -- goal: x * log y < y * log x
+    have hstep : log y < log x + y / x - 1 := by linarith [hlog_div, hlogz]
+    have hmul : x * log y < x * (log x + y / x - 1) :=
+      mul_lt_mul_of_pos_left hstep hxpos
+    have hrw : x * (log x + y / x - 1) = x * log x + y - x := by
+      simp [mul_add, mul_sub, mul_div_cancel₀ _ hxpos.ne']
+    have h1 : x * log y < x * log x + y - x := by rwa [hrw] at hmul
+    -- x ≤ y and log x > 1 ⇒ x * log x + y - x ≤ y * log x
+    have h2 : x * log x + y - x ≤ y * log x := by nlinarith [hlogx1, hxy]
+    linarith
   rw [hpi]
   exact lt_of_lt_of_le hstrict hge
 
