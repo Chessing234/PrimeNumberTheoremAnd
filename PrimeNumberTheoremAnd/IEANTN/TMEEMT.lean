@@ -220,9 +220,9 @@ theorem theorem_a (x : ℝ) (hx1 : x > 11) (hx2 : x ≤ (10 : ℝ) ^ 19) :
   have h : Eψ x ≤ 0.94 / sqrt x := theorem_2a hx1 hx2
   rw [show Eψ x = |ψ x - x| / x from rfl] at h
   have hmul : |ψ x - x| ≤ (0.94 / sqrt x) * x := (div_le_iff₀ hxpos).mp h
+  -- Same rewrite as `Buthe.normalized_bounds_of_Eψ`.
   have hdiv : x / sqrt x = sqrt x := by
-    rw [div_eq_iff hsqrt_pos.ne']
-    exact (sq_sqrt hxpos.le).symm
+    rw [div_eq_iff hsqrt_pos.ne', ← sq, Real.sq_sqrt hxpos.le]
   calc
     |ψ x - x| ≤ (0.94 / sqrt x) * x := hmul
     _ = 0.94 * (x / sqrt x) := by ring
