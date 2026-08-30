@@ -1,6 +1,7 @@
 import Architect
 import PrimeNumberTheoremAnd.IEANTN.RosserSchoenfeld.RosserSchoenfeldPrime
 import PrimeNumberTheoremAnd.IEANTN.SecondaryDefinitions
+import PrimeNumberTheoremAnd.IEANTN.Buthe
 import PrimeNumberTheoremAnd.IEANTN.Dusart
 import PrimeNumberTheoremAnd.IEANTN.RosserSchoenfeld.RSPrimeLower
 import PrimeNumberTheoremAnd.IEANTN.FioriKadiriSwidinsky.FioriKadiriSwidinsky
@@ -208,18 +209,36 @@ Some results from \cite{Buthe}-/
   "thm:buthe-a"
   (title := "Buthe Theorem a")
   (statement := /-- We have $|\psi(x) - x| \leq 0.94\sqrt{x}$ when $11 < x \leq 10^{19}$. -/)
+  (proof := /-- Absolute-error form of \ref{buthe-theorem-2a}:
+    $|\psi(x)-x|/x = E\psi(x) \leq 0.94/\sqrt{x}$. -/)
+  (proofUses := ["buthe-theorem-2a"])
   (latexEnv := "theorem")]
 theorem theorem_a (x : ℝ) (hx1 : x > 11) (hx2 : x ≤ (10 : ℝ) ^ 19) :
-    |ψ x - x| ≤ 0.94 * sqrt x := by sorry
+    |ψ x - x| ≤ 0.94 * sqrt x := by
+  have hxpos : (0 : ℝ) < x := lt_trans (by norm_num) hx1
+  have hsqrt_pos : 0 < sqrt x := Real.sqrt_pos.mpr hxpos
+  have h : Eψ x ≤ 0.94 / sqrt x := theorem_2a hx1 hx2
+  rw [show Eψ x = |ψ x - x| / x from rfl] at h
+  have hmul : |ψ x - x| ≤ (0.94 / sqrt x) * x := (div_le_iff₀ hxpos).mp h
+  -- Same rewrite as `Buthe.normalized_bounds_of_Eψ`.
+  have hdiv : x / sqrt x = sqrt x := by
+    rw [div_eq_iff hsqrt_pos.ne', ← sq, Real.sq_sqrt hxpos.le]
+  calc
+    |ψ x - x| ≤ (0.94 / sqrt x) * x := hmul
+    _ = 0.94 * (x / sqrt x) := by ring
+    _ = 0.94 * sqrt x := by rw [hdiv]
 
 @[blueprint
   "thm:buthe-b"
   (title := "Buthe Theorem b")
   (statement := /-- We have $0 < \mathrm{li}(x) - \pi(x) \leq \frac{\sqrt{x}}{\log x}\left(1.95 + \frac{3.9}{\log x} + \frac{19.5}{\log^2 x}\right)$ when $2 \leq x \leq 10^{19}$. -/)
+  (proof := /-- Conjunction of \ref{buthe-theorem-2f} and \ref{buthe-theorem-2e}. -/)
+  (proofUses := ["buthe-theorem-2e", "buthe-theorem-2f"])
   (latexEnv := "theorem")]
 theorem theorem_b (x : ℝ) (hx1 : x ≥ 2) (hx2 : x ≤ (10 : ℝ) ^ 19) :
     0 < li x - pi x ∧
-    li x - pi x ≤ sqrt x / log x * (1.95 + 3.9 / log x + 19.5 / (log x)^2) := by sorry
+    li x - pi x ≤ sqrt x / log x * (1.95 + 3.9 / log x + 19.5 / (log x)^2) :=
+  ⟨theorem_2f hx1 hx2, theorem_2e hx1 hx2⟩
 
 end Buthe
 
