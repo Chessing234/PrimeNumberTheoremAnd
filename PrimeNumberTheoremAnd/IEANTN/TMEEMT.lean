@@ -278,30 +278,29 @@ Some results from \cite{Dusart1999}-/
   (proofUses := ["Dusart_cor_5_3_a"])
   (latexEnv := "theorem")]
 theorem pi_inequality (x : ℝ) (hx : x ≥ 5393) :
-    pi x > x / (log x - 1) := by
+    _root_.pi x > x / (log x - 1) := by
   have hx0 : (0 : ℝ) ≤ x := by linarith
   have hxpos : (0 : ℝ) < x := by linarith
   have hx1 : (1 : ℝ) < x := by linarith
+  -- e² ≈ 7.39 < 8 ≤ 5393 ≤ x, so log x > 2 and the denominator is positive.
   have hexp2 : exp 2 < x := by
-    have h : exp 2 < 9 := by
-      have : exp 2 = exp 1 * exp 1 := by rw [← exp_add]; norm_num
-      nlinarith [exp_one_lt_d9]
-    linarith
+    have h8 : exp 2 < (8 : ℝ) := by
+      have heq : exp 2 = exp 1 * exp 1 := by rw [← exp_add]; norm_num
+      nlinarith [exp_one_lt_d9, heq]
+    exact lt_of_lt_of_le h8 (le_trans (by norm_num : (8 : ℝ) ≤ 5393) hx)
   have hlogx2 : (2 : ℝ) < log x := by
     rwa [← log_exp 2, log_lt_log_iff (exp_pos _) hxpos]
   have hdenx : (0 : ℝ) < log x - 1 := by linarith
   set y := (x + (⌊x⌋₊ + 1 : ℝ)) / 2
-  have hxy : x < y := by
-    have := Nat.lt_floor_add_one x
-    dsimp [y]; linarith
-  have hyu : y < (⌊x⌋₊ : ℝ) + 1 := by
-    have : (⌊x⌋₊ : ℝ) ≤ x := Nat.floor_le hx0
-    dsimp [y]; linarith
-  have hyl : (⌊x⌋₊ : ℝ) ≤ y := by
-    have : (⌊x⌋₊ : ℝ) ≤ x := Nat.floor_le hx0
-    dsimp [y]; linarith
+  have hx_lt_succ : x < (⌊x⌋₊ : ℝ) + 1 := Nat.lt_floor_add_one x
+  have hfle : (⌊x⌋₊ : ℝ) ≤ x := Nat.floor_le hx0
+  have hxy : x < y := by dsimp [y]; linarith
+  have hyu : y < (⌊x⌋₊ : ℝ) + 1 := by dsimp [y]; linarith
+  have hyl : (⌊x⌋₊ : ℝ) ≤ y := by dsimp [y]; linarith
   have hfloor : ⌊y⌋₊ = ⌊x⌋₊ := Nat.floor_eq_on_Ico _ _ ⟨hyl, hyu⟩
-  have hpi : pi x = pi y := by simp [pi, hfloor]
+  have hpi : _root_.pi x = _root_.pi y := by
+    unfold _root_.pi
+    rw [hfloor]
   have hypos : (0 : ℝ) < y := by linarith
   have hge := Dusart.corollary_5_3_a (by linarith : y ≥ 5393)
   have hz : (1 : ℝ) < y / x := (one_lt_div hxpos).mpr hxy
@@ -313,15 +312,11 @@ theorem pi_inequality (x : ℝ) (hx : x ≥ 5393) :
     linarith
   have hstrict : x / (log x - 1) < y / (log y - 1) := by
     rw [div_lt_div_iff₀ hdenx hdeny]
-    have : log y < log x + y / x - 1 := by linarith
+    have : log y < log x + y / x - 1 := by linarith [hlog_div, hlogz]
     have hmul := mul_lt_mul_of_pos_left this hxpos
     have hrw : x * (log x + y / x - 1) = x * log x + y - x := by field_simp; ring
-    have h1 : x * log y < x * log x + y - x := by linarith
-    have h2 : y * log x - x * log y > (y - x) * (log x - 1) := by nlinarith
-    have h3 : (y - x) * (log x - 1) > y - x := by
-      have : (0 : ℝ) < y - x := sub_pos.mpr hxy
-      nlinarith
-    nlinarith
+    have h1 : x * log y < x * log x + y - x := by linarith [hmul, hrw]
+    nlinarith [h1, hdenx, sub_pos.mpr hxy]
   rw [hpi]
   exact lt_of_lt_of_le hstrict hge
 
