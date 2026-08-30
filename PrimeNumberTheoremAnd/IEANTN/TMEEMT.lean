@@ -340,7 +340,7 @@ Some results from \cite{Dusart1999}-/
   (latexEnv := "theorem")]
 theorem pi_inequality (x : ℝ) (hx : x ≥ 5393) :
     pi x > x / (log x - 1) := by
-  -- Art01 / Dusart1999 use a strict inequality. Dusart2018 Cor 5.3(a) is non-strict.
+  -- Matches `Dusart.corollary_5_3_a` (strict), Art01 / Dusart1999.
   sorry
 
 private lemma log_ge_22 {x : ℝ} (hx : x ≥ exp 22) : log x ≥ 22 := by
