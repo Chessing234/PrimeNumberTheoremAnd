@@ -286,8 +286,12 @@ theorem pi_inequality (x : ℝ) (hx : x ≥ 5393) :
   have hexp2 : exp 2 < x := by
     have he1 : exp 1 < (3 : ℝ) := lt_trans exp_one_lt_d9 (by norm_num)
     have h9 : exp 2 < (9 : ℝ) := by
+      have heq : exp 2 = exp 1 * exp 1 := by
+        calc
+          exp 2 = exp (1 + 1) := by congr 1; norm_num
+          _ = exp 1 * exp 1 := (exp_add 1 1).symm
       calc
-        exp 2 = exp 1 * exp 1 := (exp_add 1 1).symm
+        exp 2 = exp 1 * exp 1 := heq
         _ < 3 * 3 := mul_lt_mul'' he1 he1 (exp_pos _).le (exp_pos _).le
         _ = 9 := by norm_num
     exact lt_of_lt_of_le h9 (le_trans (by norm_num : (9 : ℝ) ≤ 5393) hx)
