@@ -282,12 +282,15 @@ theorem pi_inequality (x : ℝ) (hx : x ≥ 5393) :
   have hx0 : (0 : ℝ) ≤ x := by linarith
   have hxpos : (0 : ℝ) < x := by linarith
   have hx1 : (1 : ℝ) < x := by linarith
-  -- e² ≈ 7.39 < 8 ≤ 5393 ≤ x, so log x > 2 and the denominator is positive.
+  -- e² < 9 ≤ 5393 ≤ x, so log x > 2 and the denominator is positive.
   have hexp2 : exp 2 < x := by
-    have h8 : exp 2 < (8 : ℝ) := by
-      have heq : exp 2 = exp 1 * exp 1 := by rw [← exp_add]; norm_num
-      nlinarith [exp_one_lt_d9, heq]
-    exact lt_of_lt_of_le h8 (le_trans (by norm_num : (8 : ℝ) ≤ 5393) hx)
+    have he1 : exp 1 < (3 : ℝ) := lt_trans exp_one_lt_d9 (by norm_num)
+    have h9 : exp 2 < (9 : ℝ) := by
+      calc
+        exp 2 = exp 1 * exp 1 := (exp_add 1 1).symm
+        _ < 3 * 3 := mul_lt_mul'' he1 he1 (exp_pos _).le (exp_pos _).le
+        _ = 9 := by norm_num
+    exact lt_of_lt_of_le h9 (le_trans (by norm_num : (9 : ℝ) ≤ 5393) hx)
   have hlogx2 : (2 : ℝ) < log x := by
     rwa [← log_exp 2, log_lt_log_iff (exp_pos _) hxpos]
   have hdenx : (0 : ℝ) < log x - 1 := by linarith
@@ -312,11 +315,25 @@ theorem pi_inequality (x : ℝ) (hx : x ≥ 5393) :
     linarith
   have hstrict : x / (log x - 1) < y / (log y - 1) := by
     rw [div_lt_div_iff₀ hdenx hdeny]
-    have : log y < log x + y / x - 1 := by linarith [hlog_div, hlogz]
-    have hmul := mul_lt_mul_of_pos_left this hxpos
-    have hrw : x * (log x + y / x - 1) = x * log x + y - x := by field_simp; ring
-    have h1 : x * log y < x * log x + y - x := by linarith [hmul, hrw]
-    nlinarith [h1, hdenx, sub_pos.mpr hxy]
+    -- goal: x * (log y - 1) < y * (log x - 1)
+    have hstep : log y < log x + y / x - 1 := by linarith [hlog_div, hlogz]
+    have hmul : x * log y < x * (log x + y / x - 1) :=
+      mul_lt_mul_of_pos_left hstep hxpos
+    have hrw : x * (log x + y / x - 1) = x * log x + y - x := by
+      simp [mul_add, mul_sub, mul_div_cancel₀ _ hxpos.ne']
+    have h1 : x * log y < x * log x + y - x := by rwa [hrw] at hmul
+    -- x*(log y - 1) < y*(log x - 1) ⇔ x*log y - x < y*log x - y.
+    -- From h1 the LHS is < x*log x + y - 2x, and that ≤ RHS since
+    -- log x > 2 and x < y ⇒ x*(log x - 2) ≤ y*(log x - 2).
+    have hxlog : x * (log y - 1) < y * (log x - 1) := by
+      have hmid : x * log y - x < x * log x + y - 2 * x := by linarith [h1]
+      have hcmp : x * log x + y - 2 * x ≤ y * log x - y := by
+        have hfac : (0 : ℝ) < log x - 2 := by linarith [hlogx2]
+        have : x * (log x - 2) ≤ y * (log x - 2) :=
+          mul_le_mul_of_nonneg_right (le_of_lt hxy) hfac.le
+        linarith
+      linarith
+    exact hxlog
   rw [hpi]
   exact lt_of_lt_of_le hstrict hge
 
