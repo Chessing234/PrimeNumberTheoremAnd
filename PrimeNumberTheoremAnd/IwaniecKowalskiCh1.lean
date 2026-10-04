@@ -76,7 +76,7 @@ lemma IsAdditive.map_one [AddCancelMonoid R] {f : ArithmeticFunction R}
   (proofUses := ["IsCompletelyAdditive.isAdditive", "IsAdditive.map_one"])]
 lemma IsCompletelyAdditive.map_one [AddCancelMonoid R] {f : ArithmeticFunction R}
     (hf : f.IsCompletelyAdditive) : f 1 = 0 :=
-  hf.isAdditive.map_one
+  IsAdditive.map_one hf.isAdditive
 
 /-- Complete additivity turns powers of a nonzero argument into natural multiples. -/
 @[blueprint "IsCompletelyAdditive.map_pow"
