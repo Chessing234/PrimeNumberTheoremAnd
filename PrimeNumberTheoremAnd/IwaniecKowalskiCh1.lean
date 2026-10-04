@@ -942,14 +942,13 @@ lemma LSeriesSummable_two_pow_omega {s : ℂ} (hs : 1 < s.re) :
   (proofUses := ["powR", "isMultiplicative_powR"])]
 lemma LSeries.term_isMultiplicative {f : ℕ → ℂ}
     (hf : (toArithmeticFunction f).IsMultiplicative) (s : ℂ) :
-    (⟨LSeries.term f s, LSeries.term_zero f s⟩ : ArithmeticFunction ℂ).IsMultiplicative := by
+    IsMultiplicative (⟨LSeries.term f s, LSeries.term_zero f s⟩ : ArithmeticFunction ℂ) := by
   have hterm : (⟨LSeries.term f s, LSeries.term_zero f s⟩ : ArithmeticFunction ℂ) =
       (toArithmeticFunction f).pmul (powR (-s)) := by
     ext n
-    by_cases hn : n = 0
-    · simp [hn]
-    · simp [toArithmeticFunction, powR, LSeries.term, hn, Complex.cpow_neg,
-        div_eq_mul_inv, ArithmeticFunction.pmul_apply]
+    change LSeries.term f s n = toArithmeticFunction f n * powR (-s) n
+    by_cases hn : n = 0 <;>
+      simp [toArithmeticFunction, powR, LSeries.term, hn, Complex.cpow_neg, div_eq_mul_inv]
   rw [hterm]
   exact hf.pmul isMultiplicative_powR
 
