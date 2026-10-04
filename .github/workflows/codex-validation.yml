@@ -1,0 +1,71 @@
+name: Validate eight PNT contributions
+on:
+  push:
+    branches: [codex/pnt-validation-oct04]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [arithmetic, analysis]
+    steps:
+      - uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: false
+          haskell: false
+          large-packages: false
+          docker-images: false
+          swap-storage: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596
+        with:
+          build: false
+          test: false
+          lint: false
+          use-github-cache: false
+      - name: Validate each independent branch
+        env:
+          VALIDATION_GROUP: ${{ matrix.group }}
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/pnt-validation"
+          if [[ "$VALIDATION_GROUP" == arithmetic ]]; then
+            changes="additive comparison terms primepowers"
+          else
+            changes="contours limits integrals supports"
+          fi
+          failed=0
+          for change in $changes; do
+            git checkout "origin/codex/pnt-${change}-oct04"
+            case "$change" in
+              additive|comparison|terms|primepowers) modules="PrimeNumberTheoremAnd.IwaniecKowalskiCh1" ;;
+              contours) modules="PrimeNumberTheoremAnd.ResidueCalcOnRectangles PrimeNumberTheoremAnd.PerronFormula" ;;
+              limits) modules="PrimeNumberTheoremAnd.Auxiliary PrimeNumberTheoremAnd.PerronFormula PrimeNumberTheoremAnd.MellinCalculus" ;;
+              integrals) modules="PrimeNumberTheoremAnd.Mathlib.MeasureTheory.Integral.IntegrableOn PrimeNumberTheoremAnd.MellinCalculus" ;;
+              supports) modules="PrimeNumberTheoremAnd.Mathlib.Algebra.Notation.Support PrimeNumberTheoremAnd.MellinCalculus" ;;
+            esac
+            facets=""
+            for module in $modules; do facets="$facets $module:blueprint"; done
+            if lake build $modules $facets > "$RUNNER_TEMP/pnt-validation/$change.log" 2>&1; then
+              echo "$change PASS $(git rev-parse HEAD)" | tee -a "$RUNNER_TEMP/pnt-validation/results.txt"
+            else
+              echo "$change FAIL $(git rev-parse HEAD)" | tee -a "$RUNNER_TEMP/pnt-validation/results.txt"
+              cat "$RUNNER_TEMP/pnt-validation/$change.log"
+              failed=1
+            fi
+          done
+          exit "$failed"
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: pnt-validation-${{ matrix.group }}
+          path: ${{ runner.temp }}/pnt-validation
