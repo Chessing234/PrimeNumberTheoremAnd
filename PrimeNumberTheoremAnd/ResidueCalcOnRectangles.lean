@@ -5,6 +5,7 @@ import Mathlib.Analysis.Complex.RemovableSingularity
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 import Mathlib.Analysis.Meromorphic.NormalForm
 import Mathlib.MeasureTheory.Integral.Asymptotics
+import Mathlib.MeasureTheory.Integral.IntegralEqImproper
 import PrimeNumberTheoremAnd.Rectangle
 import PrimeNumberTheoremAnd.Tactic.AdditiveCombination
 
