@@ -934,7 +934,7 @@ lemma LSeriesSummable.of_norm_le_norm {f g : ℕ → ℂ} {s : ℂ}
 lemma LSeriesSummable_two_pow_omega {s : ℂ} (hs : 1 < s.re) :
     LSeriesSummable (fun n ↦ 2 ^ (ω n)) s := by
   have hsum : LSeriesSummable (fun n ↦ (σ 0 n : ℂ)) s := by
-    simpa only [d_two] using LSeries_d_summable 2 hs
+    simpa only [d_two, tau] using LSeries_d_summable 2 hs
   apply hsum.of_coeff_norm_le
   intro n hn
   simp only [norm_pow, Complex.norm_ofNat, RCLike.norm_natCast]
